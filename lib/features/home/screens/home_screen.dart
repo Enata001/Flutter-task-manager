@@ -5,7 +5,6 @@ import 'package:task_manager/features/auth/widgets/celevated_button.dart';
 import 'package:task_manager/models/todo.dart';
 import 'package:task_manager/models/userdata.dart';
 import 'package:task_manager/providers/auth_provider.dart';
-import 'package:task_manager/providers/cache_provider.dart';
 import 'package:task_manager/providers/todo_provider.dart';
 import 'package:task_manager/utils/constants.dart';
 import 'package:task_manager/utils/navigation.dart';
@@ -24,19 +23,18 @@ bool isChecked = false;
 bool isPending = true;
 
 class _HomeScreenState extends State<HomeScreen> {
+  late Userdata? user;
+
   @override
   void initState() {
     super.initState();
     context.read<ToDoProvider>().getAllTasks();
+    user = context.read<AuthProvider>().user;
   }
 
   @override
   Widget build(BuildContext context) {
-    final Userdata? user = Provider.of<AuthProvider>(context).user;
     final ToDoProvider toDoProvider = Provider.of<ToDoProvider>(context);
-    final CacheProvider toProvider = Provider.of<CacheProvider>(context);
-
-print('this is ${toProvider.allTasks}');
     Map<bool, Widget> tabs = {
       true: Padding(
         padding: const EdgeInsets.symmetric(
@@ -72,10 +70,9 @@ print('this is ${toProvider.allTasks}');
           IconButton(
               onPressed: () async {
                 await toDoProvider.clear(
-                  onSuccess: () => Navigation.skipTo(
-                      Navigation.index, toDoProvider.sharedPreferences),
+                  onSuccess: () => Navigation.skipTo(Navigation.index,
+                      toDoProvider.cacheProvider.sharedPreferences),
                 );
-                print(toDoProvider.allTasks);
               },
               icon: const Icon(Icons.logout))
         ],
@@ -113,26 +110,35 @@ print('this is ${toProvider.allTasks}');
               ),
             ),
             Expanded(
-              child: TaskList(
-                  deleteTask: (e) => toDoProvider.deleteTask(e),
-                  editTask: (Todo e) async {
-                    final task = await createOrUpdateTask(
-                      context,
-                      createOrEditTask: CreateOrEditTask(
-                        task: e,
-                      ),
-                    );
-                    if (task != null) {
-                      if (task.todo.isNotEmpty) {
-                        toDoProvider.updateTask(task);
-                      }
-                    }
-                  },
-                  changeStatus: (id, isCheck) =>
-                      toDoProvider.changeStatus(id, isChecked),
-                  tasks: isPending
-                      ? toDoProvider.pendingTasks
-                      : toDoProvider.completedTasks),
+              child: Consumer<ToDoProvider>(builder: (context, value, child) {
+                return value.isDownloaded
+                    ? TaskList(
+                        deleteTask: (e) => value.deleteTask(e),
+                        editTask: (Todo e) async {
+                          final task = await createOrUpdateTask(
+                            context,
+                            createOrEditTask: CreateOrEditTask(
+                              task: e,
+                            ),
+                          );
+                          if (task != null) {
+                            if (task.todo.isNotEmpty) {
+                              value.updateTask(task);
+                            }
+                          }
+                        },
+                        changeStatus: (id, isCheck) =>
+                            value.changeStatus(id, isChecked),
+                        tasks: isPending
+                            ? value.pendingTasks
+                            : value.completedTasks)
+                    : Center(
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.secondary,
+                          strokeCap: StrokeCap.round,
+                        ),
+                      );
+              }),
             ),
           ],
         ),

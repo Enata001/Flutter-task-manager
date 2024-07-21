@@ -9,13 +9,19 @@ class CacheProvider extends ChangeNotifier {
 
   List<Todo>? get allTasks => _allTasks;
 
-  CacheProvider({required this.sharedPreferences});
+  bool? _isDownloaded;
+
+  bool get isDownloaded => _isDownloaded ?? false;
+
+  CacheProvider({required this.sharedPreferences}) {
+    _isDownloaded = sharedPreferences.getBool(Constants.isDownloaded) ?? false;
+    notifyListeners();
+    getTasks();
+  }
 
   getTasks() {
     var results = sharedPreferences.getStringList(Constants.userTasks) ?? [];
-    print('from cache');
     var tasks = results.map((todo) {
-      print(todo);
       return Todo.fromString(todo);
     }).toList();
     _allTasks = tasks;
@@ -24,21 +30,24 @@ class CacheProvider extends ChangeNotifier {
 
   saveTasks(List<Todo> tasks) async {
     final results = tasks.map((todo) => todo.toString()).toList();
-    await sharedPreferences.setStringList(Constants.userTasks, results ?? []);
+    await sharedPreferences.setStringList(Constants.userTasks, results);
     _allTasks = tasks;
     notifyListeners();
   }
+
   addOnlineTasks(List<Todo> tasks) async {
     final results = tasks.map((todo) => todo.toString()).toList();
-    await sharedPreferences.setStringList(Constants.userTasks, results ?? []);
+    await sharedPreferences.setStringList(Constants.userTasks, results);
     _allTasks?.addAll(tasks);
+    _isDownloaded =true;
+    await sharedPreferences.setBool(Constants.isDownloaded, _isDownloaded!);
     notifyListeners();
   }
 
   clearTasks() async {
     _allTasks?.clear();
+    _isDownloaded = false;
     await sharedPreferences.clear();
-    
     notifyListeners();
   }
 }

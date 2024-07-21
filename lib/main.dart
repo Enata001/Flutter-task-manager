@@ -23,9 +23,11 @@ void main() async {
       ChangeNotifierProvider<CacheProvider>(
         create: (context) => CacheProvider(sharedPreferences: prefs),
       ),
-      ChangeNotifierProxyProvider<CacheProvider,ToDoProvider>(
-        update: (context,cache,prevTodo) => ToDoProvider(sharedPreferences: prefs),
-        create: (context) => ToDoProvider(sharedPreferences: prefs),
+      ChangeNotifierProxyProvider<CacheProvider, ToDoProvider>(
+        update: (context, cache, prevTodo) =>
+            ToDoProvider(cacheProvider: cache),
+        create: (context) => ToDoProvider(
+            cacheProvider: CacheProvider(sharedPreferences: prefs)),
       ),
     ],
     child: MyApp(sharedPreferences: prefs),

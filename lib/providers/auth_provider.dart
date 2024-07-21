@@ -18,11 +18,5 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Future clearInfo() async {
-  //   await sharedPreferences.clear();
-  //   await Future.delayed(const Duration(milliseconds: 500));
-  //   notifyListeners();
-  // }
-
-  bool get isLoggedIn => sharedPreferences.containsKey(Constants.userData) ?? false;
+  bool get isLoggedIn => sharedPreferences.containsKey(Constants.userData);
 }
