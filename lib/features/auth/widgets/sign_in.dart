@@ -20,12 +20,18 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   late TextEditingController usernameController;
   late TextEditingController passwordController;
+  late FocusNode firstFocus;
+  late FocusNode secondFocus;
+
+  get userProvider => context.read<AuthProvider>();
 
   @override
   void initState() {
     super.initState();
     usernameController = TextEditingController();
     passwordController = TextEditingController();
+    firstFocus = FocusNode();
+    secondFocus = FocusNode();
   }
 
   @override
@@ -33,6 +39,8 @@ class _SignInState extends State<SignIn> {
     super.dispose();
     usernameController.dispose();
     passwordController.dispose();
+    firstFocus.dispose();
+    secondFocus.dispose();
   }
 
   bool isNotVisible = true;
@@ -42,7 +50,6 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<AuthProvider>(context);
     return Form(
       key: _formKey,
       child: Column(
@@ -59,49 +66,59 @@ class _SignInState extends State<SignIn> {
             style: Theme.of(context).textTheme.labelLarge,
           ),
           CTextField(
-              hintText: 'username',
-              textInputType: TextInputType.text,
-              controller: usernameController,
-              validator: (value) => validateText(value)),
+            hintText: 'username',
+            textInputType: TextInputType.text,
+            controller: usernameController,
+            validator: (value) => validateText(value),
+            focusNode: firstFocus,
+            inputAction: TextInputAction.next,
+            onSubmitted: (e) async{
+              firstFocus.nextFocus();
+            },
+          ),
           CTextField(
-              hintText: 'Password',
-              textInputType: TextInputType.text,
-              isPassword: isNotVisible,
-              controller: passwordController,
-              icon: isNotVisible ? Icons.lock : Icons.lock_open_rounded,
-              action: () {
-                isNotVisible = !isNotVisible;
-                setState(() {});
-              },
-              validator: (value) => validateText(value)),
+            hintText: 'Password',
+            textInputType: TextInputType.text,
+            isPassword: isNotVisible,
+            controller: passwordController,
+            icon: isNotVisible ? Icons.lock : Icons.lock_open_rounded,
+            inputAction: TextInputAction.go,
+            onSubmitted: (e) async => login(),
+            action: () {
+              isNotVisible = !isNotVisible;
+              setState(() {});
+            },
+            validator: (value) => validateText(value),
+            focusNode: secondFocus,
+          ),
           const SizedBox(
             height: Dimensions.mediumSpace,
           ),
           CElevatedButton(
             title: isLoading ? 'Loading...' : 'Sign In',
-            action: () async {
-              if (_formKey.currentState!.validate()) {
-                setState(() {
-                  isLoading = true;
-                });
-                final result = await AuthService().login(
-                    usernameController.text.trim(),
-                    passwordController.text.trim(),
-                    onFailure: () => showError(context));
-                if (result != null) {
-                  await userProvider.saveUserinfo(
-                      user: Userdata.fromMap(result));
-                  Navigation.goTo(Navigation.home);
-                } else {}
-                setState(() {
-                  isLoading = false;
-                });
-              }
-            },
+            action: () async => login(),
           ),
         ],
       ),
     );
+  }
+
+  void login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+      final result = await AuthService().login(
+          usernameController.text.trim(), passwordController.text.trim(),
+          onFailure: () => showError(context));
+      if (result != null) {
+        await userProvider.saveUserinfo(user: Userdata.fromMap(result));
+        Navigation.goTo(Navigation.home);
+      } else {}
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   String? validateText(String? value) {

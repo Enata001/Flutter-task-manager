@@ -15,6 +15,9 @@ class CTextField extends StatelessWidget {
   final Color? fillColor;
   final TextCapitalization? textCapitalization;
   final Function(String?)? onChanged;
+  final FocusNode? focusNode;
+  final TextInputAction? inputAction;
+  final Function(String?)? onSubmitted;
 
   const CTextField({
     super.key,
@@ -31,6 +34,9 @@ class CTextField extends StatelessWidget {
     this.fillColor,
     this.onChanged,
     this.textCapitalization,
+    this.focusNode,
+    this.onSubmitted,
+    this.inputAction,
   });
 
   @override
@@ -57,6 +63,9 @@ class CTextField extends StatelessWidget {
         expands: expands ?? false,
         controller: controller,
         onTapOutside: (_) => FocusScope.of(context).unfocus(),
+        textInputAction: inputAction,
+
+        onFieldSubmitted: onSubmitted,
         onChanged: onChanged,
         textCapitalization: textCapitalization ?? TextCapitalization.none,
         decoration: InputDecoration(
