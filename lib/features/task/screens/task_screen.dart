@@ -6,6 +6,7 @@ import '../../auth/widgets/celevated_button.dart';
 
 class CreateOrEditTask extends StatelessWidget {
   final Todo? task;
+  final String? description;
   final int? id;
   final int? userId;
 
@@ -13,6 +14,7 @@ class CreateOrEditTask extends StatelessWidget {
     super.key,
     this.task,
     this.id,
+    this.description = 'Add',
     this.userId,
   });
 
@@ -39,7 +41,7 @@ class CreateOrEditTask extends StatelessWidget {
                 flex: 2,
               ),
               Text(
-                "Add or Edit Task",
+                "$description Task",
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge
@@ -55,52 +57,42 @@ class CreateOrEditTask extends StatelessWidget {
             ],
           ),
           Expanded(
-            child: Row(
-              children: [
-                Text(
-                  'Task: ',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                Expanded(
-                  child: TextFormField(
-                    initialValue: newText,
-                    expands: true,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: 'Please enter task details...',
-                      filled: true,
-
-                      fillColor:
-                          Theme.of(context).primaryColor.withOpacity(0.1),
-                    ),
-                    maxLines: null,
-                    onChanged: (value) {
-                      newText = value;
-                      // print(taskDetail);
-                    },
-                  ),
-                ),
-              ],
+            child: TextFormField(
+              initialValue: newText,
+              expands: true,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: 'Please enter task details...',
+                filled: true,
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              ),
+              maxLines: null,
+              onChanged: (value) {
+                newText = value;
+                // print(taskDetail);
+              },
             ),
           ),
           Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: Dimensions.smallSpace),
-              child: CElevatedButton(
-                  action: () {
-                    if (newText != null) {
-                      if (task != null) {
-                        final updatedTask = task?.copyWith(todo: newText);
-                        Navigator.of(context).pop(updatedTask);
-                      } else {
-                        Todo newTask = Todo(
-                            id: id!, todo: newText!.trim(), userId: userId!);
-                        Navigator.of(context).pop(newTask);
-                      }
+            padding: const EdgeInsets.symmetric(
+                vertical: 5, horizontal: Dimensions.smallSpace),
+            child: CElevatedButton(
+                action: () {
+                  if (newText != null) {
+                    if (task != null) {
+                      final updatedTask = task?.copyWith(todo: newText);
+                      Navigator.of(context).pop(updatedTask);
                     } else {
-                      Navigator.of(context).pop();
+                      Todo newTask =
+                          Todo(id: id!, todo: newText!.trim(), userId: userId!);
+                      Navigator.of(context).pop(newTask);
                     }
-                  },
-                  title: 'Save'))
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
+                title: 'Save'),
+          ),
         ],
       ),
     );

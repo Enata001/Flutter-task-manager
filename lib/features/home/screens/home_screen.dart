@@ -119,6 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             context,
                             createOrEditTask: CreateOrEditTask(
                               task: e,
+                              description: 'Edit',
+
                             ),
                           );
                           if (task != null) {
@@ -160,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 createOrEditTask: CreateOrEditTask(
                   userId: user?.id,
                   id: id,
+
                 ));
             if (taskDetails != null) {
               toDoProvider.addTask(taskDetails);

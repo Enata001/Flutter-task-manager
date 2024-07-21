@@ -66,7 +66,7 @@ class _SignInState extends State<SignIn> {
             style: Theme.of(context).textTheme.labelLarge,
           ),
           CTextField(
-            hintText: 'username',
+            hintText: 'Username',
             textInputType: TextInputType.text,
             controller: usernameController,
             validator: (value) => validateText(value),
